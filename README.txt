@@ -33,5 +33,5 @@ ncu -u  "actualiza todos los necesarios"
 ncu -a "actualiza todos por igual"
 ------------------------------- START -------------------------------
 npx react-native init AwesomeTSProject --template react-native-template-typescript
-npx react-native run-android
+npx react-native run-android [ESTA EJECUTA, CONECTA EL CELULAR PRIMERO]
 npx react-native start
