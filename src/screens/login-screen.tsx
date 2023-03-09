@@ -6,10 +6,13 @@ import Logo from '../components/Logo';
 import {styles} from '../theme/app-theme';
 import {emailValidator} from '../functions/validate-mail';
 import {loginUserVerifier} from '../functions/login-user-verifier';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { UserServices } from '../services/user-services';
 
 interface Props extends StackScreenProps<any, any> {}
 
 export const LoginScreen = ({navigation}: Props) => {
+  haveToken();
   const [textEmail, onChangeTextEmail] = React.useState({value: '', error: ''});
   const [textPassword, onChangeTextPassword] = React.useState({
     value: '',
@@ -17,9 +20,20 @@ export const LoginScreen = ({navigation}: Props) => {
   });
 
   //---------------------------- FUNCTIONS ----------------------------
-  function loginUser() {
+  async function haveToken() {
+    const token = await AsyncStorage.getItem('x-access-token');
+    if (token != null) {
+      UserServices.getUserByToken();
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'HomeScreen'}],
+      });
+    }
+  }
+
+  async function loginUser() {
     const emailError = emailValidator(textEmail.value);
-    const passwordError = loginUserVerifier(
+    const passwordError = await loginUserVerifier(
       textEmail.value,
       textPassword.value,
     );

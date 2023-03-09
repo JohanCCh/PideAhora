@@ -3,7 +3,7 @@ import { InvoiceDetail } from "./invoice-detail";
 import { User } from "./user";
 
 export interface Invoice {
-    is_delivered: boolean;
+    id: string;
     invoice_detail: InvoiceDetail[];
     employee: Employee;
     user: User;

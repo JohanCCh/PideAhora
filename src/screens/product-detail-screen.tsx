@@ -11,6 +11,7 @@ import {
 import {StackScreenProps} from '@react-navigation/stack';
 import {RootStackParams} from '../navigator/stack-navigator';
 import {styles} from '../theme/app-theme';
+import {ProductoServices} from '../services/producto-service';
 
 interface Props
   extends StackScreenProps<RootStackParams, 'ProductDetailScreen'> {}
@@ -19,7 +20,7 @@ export const ProductDetailScreen = ({route, navigation}: Props) => {
   const product = route.params;
   const [textQuantity, onChangeTextQuantity] = React.useState('1');
 
-  //---------------------------- FUNCTIONS ----------------------------  
+  //---------------------------- FUNCTIONS ----------------------------
   function onChanged(text: string) {
     onChangeTextQuantity(text.replace(/[^0-9]/g, ''));
     getTotalPrice();
@@ -34,6 +35,7 @@ export const ProductDetailScreen = ({route, navigation}: Props) => {
   }
 
   function addProduct() {
+    ProductoServices.addProduct(product);
     navigation.navigate('HomeScreen');
   }
 
@@ -114,12 +116,14 @@ export const ProductDetailScreen = ({route, navigation}: Props) => {
   );
 };
 
+/* ---------------------------- STYLES ---------------------------- */
 const style = StyleSheet.create({
   titleHeader: {
     fontSize: 17,
     fontFamily: 'Roboto',
+    textTransform: 'uppercase',
     fontWeight: 'bold',
-    color: 'black',
+    color: 'white',
     textAlign: 'center',
   },
   containerImgProduct: {

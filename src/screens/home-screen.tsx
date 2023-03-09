@@ -8,7 +8,7 @@ import {ProductoServices} from '../services/producto-service';
 interface Props extends StackScreenProps<any, any> {}
 
 export const HomeScreen = ({navigation}: Props) => {
-  const listProducts = ProductoServices.geListProducts();
+  const listProducts = ProductoServices.getListProducts();
   const [searchProduct, onChangeSearchProduct] = React.useState('');
   const timeArrival: number = 30;
   const shippingType = 'Envío $ 0.99';
@@ -19,6 +19,7 @@ export const HomeScreen = ({navigation}: Props) => {
       console.log('Buscar producto: ' + searchProduct);
     }
   }
+  
 
   return (
     <View style={styles.container}>

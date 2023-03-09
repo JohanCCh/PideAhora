@@ -1,8 +1,10 @@
 import React from 'react';
+import {Product} from '../interfaces/product';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export class ProductoServices extends React.Component {
   //devuelve lista de productos
-  static geListProducts = () => {
+  static getListProducts = () => {
     return [
       {
         id: 1,
@@ -101,5 +103,15 @@ export class ProductoServices extends React.Component {
           'https://elahorro.com.ec/web/image/product.template/88998/image',
       },
     ];
+  };
+
+  //añade un producto al carrito de compras
+  static addProduct = async (data: Product) => {
+    console.log('Guardar producto');
+    try {
+      await AsyncStorage.setItem('@listMeProducts', JSON.stringify(data));
+    } catch (e) {
+      // saving error
+    }
   };
 }

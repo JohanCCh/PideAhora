@@ -11,17 +11,16 @@ import {
 } from 'react-native';
 import {RootStackParams} from '../navigator/stack-navigator';
 import {styles} from '../theme/app-theme';
-import { UserServices } from '../services/user-services';
+import {UserServices} from '../services/user-services';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface Props
   extends StackScreenProps<RootStackParams, 'UserProfileScreen'> {}
 
 export const UserProfileScreen = ({navigation}: Props) => {
-  const user = UserServices.getUserProfile('1');
-
   useEffect(() => {
     navigation.setOptions({
-      title: 'Perfil de ' + user.name,
+      title: 'Perfil de ' + UserServices.user?.name,
     });
   });
 
@@ -34,10 +33,13 @@ export const UserProfileScreen = ({navigation}: Props) => {
       },
       {
         text: 'Aceptar',
-        onPress: () => {
-          navigation.reset({
-            index: 0,
-            routes: [{name: 'LoginScreen'}],
+        onPress: async () => {
+          AsyncStorage.removeItem('x-access-token').finally(() => {
+            AsyncStorage.clear();
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'LoginScreen'}],
+            });
           });
         },
       },
@@ -81,9 +83,9 @@ export const UserProfileScreen = ({navigation}: Props) => {
             />
           </View>
           {/* ------- MANE ------- */}
-          <Text style={style.tetBold}> {user.name}</Text>
+          <Text style={style.tetBold}> {UserServices.user?.name}</Text>
           {/* ------- EMAIL ------- */}
-          <Text style={style.text}> {user.email}</Text>
+          <Text style={style.text}> {UserServices.user?.email}</Text>
           {/* ---------------------------- ACTIONS ---------------------------- */}
           <View style={style.containerActions}>
             {/* ------- BillS ------- */}
@@ -96,7 +98,7 @@ export const UserProfileScreen = ({navigation}: Props) => {
                   style={style.imgBtnActions}
                 />
               </TouchableOpacity>
-              <Text> Facturas </Text>
+              <Text> Factura </Text>
             </View>
             {/* ------- DELIVER ------- */}
             <View style={style.containerBtnActions}>
@@ -108,7 +110,7 @@ export const UserProfileScreen = ({navigation}: Props) => {
                   style={style.imgBtnActions}
                 />
               </TouchableOpacity>
-              <Text> Entregas </Text>
+              <Text> Pedidos </Text>
             </View>
             {/* ------- LOCATION ------- */}
             <View style={style.containerBtnActions}>
@@ -123,17 +125,19 @@ export const UserProfileScreen = ({navigation}: Props) => {
               <Text> Ubicación </Text>
             </View>
             {/* ------- ORDER ------- */}
-            <View style={style.containerBtnActions}>
-              <TouchableOpacity
-                style={style.btnActions}
-                onPress={() => navigation.navigate('OrderScreen')}>
-                <Image
-                  source={require('../assets/iconDeliveriesMade.png')}
-                  style={style.imgBtnActions}
-                />
-              </TouchableOpacity>
-              <Text> Pedidos </Text>
-            </View>
+            {UserServices.role === 'administrador' ? (
+              <View style={style.containerBtnActions}>
+                <TouchableOpacity
+                  style={style.btnActions}
+                  onPress={() => navigation.navigate('OrderScreen')}>
+                  <Image
+                    source={require('../assets/iconDeliveriesMade.png')}
+                    style={style.imgBtnActions}
+                  />
+                </TouchableOpacity>
+                <Text> Entregas </Text>
+              </View>
+            ) : null}
             {/* ------- LOGOUT ------- */}
             <View style={style.containerBtnActions}>
               <TouchableOpacity style={style.btnLogout} onPress={logout}>

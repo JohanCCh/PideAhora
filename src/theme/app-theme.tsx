@@ -23,7 +23,7 @@ export const styles = StyleSheet.create({
     height: 50,
     alignItems: 'center',
     paddingHorizontal: 10,
-    backgroundColor: '#faebd7',
+    backgroundColor: '#8e44ad',
     elevation: 50,
     borderBottomWidth: 0.1,
     flexDirection: 'row',
@@ -50,6 +50,7 @@ export const styles = StyleSheet.create({
   imgBtnSection: {
     width: 30,
     height: 30,
+    tintColor: 'white',
   },
   btnSection: {
     width: 40,
@@ -63,6 +64,7 @@ export const styles = StyleSheet.create({
     width: 30,
     height: 30,
     marginLeft: 5,
+    tintColor: 'white',
   },
   inputSearch: {
     paddingLeft: 5,
