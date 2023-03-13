@@ -6,15 +6,48 @@ import {
   StyleSheet,
   TouchableOpacity,
   FlatList,
+  RefreshControl,
 } from 'react-native';
 import {StackScreenProps} from '@react-navigation/stack';
 import {styles} from '../theme/app-theme';
 import {DeliveryService} from '../services/delivery-service';
 
 interface Props extends StackScreenProps<any, any> {}
-const listDeliveries = DeliveryService.getDelivery();
 
 export const OrderScreen = ({route, navigation}: Props) => {
+  getAllDeliveries();
+  const listDeliveries = DeliveryService.listAllDeliveries;
+  const [refreshing, setRefreshing] = React.useState(false);
+  //console.log(listDeliveries);
+
+  //---------------------------- FUNCTIONS ----------------------------
+  //actualiza la lista de entregas
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  }, []);
+
+  //obtener todos los pedidos
+  async function getAllDeliveries() {
+    await DeliveryService.getAllDeliveries();
+  }
+
+  //dar formato a la fecha
+  const formatDate = (data: Date) => {
+    if (data != null) {
+      const date = new Date(data);
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear();
+      const hour = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      return `${day}-${month}-${year}`;
+    }
+    return '';
+  };
+
   return (
     <View style={styles.container}>
       {/* ---------------------------- HEADER ---------------------------- */}
@@ -33,7 +66,7 @@ export const OrderScreen = ({route, navigation}: Props) => {
         {/* ------- SEARCH ------- */}
         <View style={styles.searchSection}>
           <Text style={style.titleHeader}>Entregas</Text>
-          </View>
+        </View>
         {/* ------- HOME ------- */}
         <View style={styles.withSection}>
           <TouchableOpacity
@@ -52,33 +85,34 @@ export const OrderScreen = ({route, navigation}: Props) => {
         <FlatList
           style={style.list}
           data={listDeliveries}
-          renderItem={({item}) =>
-            !item.is_delivered ? (
-              // INVOICE
-              <View style={style.containerDeliverers}>
-                {/* SECTION START */}
-                <View style={style.sectionStart}>
-                  <Image
-                    style={style.imageIcon}
-                    source={
-                      item.is_delivered
-                        ? require('../assets/iconBills.png')
-                        : require('../assets/iconDeliveriesMade.png')
-                    }
-                  />
-                </View>
-                {/* SECTION MIDDLE */}
-                <View style={style.sectionMiddle}>
-                  <Text style={style.text}>{item.date_delivery}</Text>
-                </View>
-                {/* SECTION END */}
-                <View style={style.sectionEnd}>
-                  <TouchableOpacity style={style.btnAddProduct}>
-                    <Text style={style.textBtn}>Entregar</Text>
-                  </TouchableOpacity>
-                </View>
+          renderItem={({item}) => (
+            // INVOICE
+            <View style={style.containerDeliverers}>
+              {/* SECTION START */}
+              <View style={style.sectionStart}>
+                <Image
+                  style={style.imageIcon}
+                  source={
+                    item.is_delivered
+                      ? require('../assets/iconBills.png')
+                      : require('../assets/iconDeliveriesMade.png')
+                  }
+                />
               </View>
-            ) : null
+              {/* SECTION MIDDLE */}
+              <View style={style.sectionMiddle}>
+                <Text style={style.text}>{formatDate(item.date)}</Text>
+              </View>
+              {/* SECTION END */}
+              <View style={style.sectionEnd}>
+                <TouchableOpacity style={style.btnAddProduct}>
+                  <Text style={style.textBtn}>Entregar</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
         />
       </View>

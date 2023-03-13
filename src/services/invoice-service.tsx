@@ -113,36 +113,4 @@ export class InvoiceService extends React.Component {
     if (safeCreate) await AsyncStorage.removeItem('CarProducts');
     return safeCreate;
   };
-
-  //--------------------------------------------------------------------------------------------------
-  //devuelve una factura
-  static getOneInvoice = () => {
-    return [
-      {
-        id: '1',
-        invoice_detail: [
-          {
-            id: '1',
-            product: ProductServices.getListProducts()['1'],
-            total: '2',
-          },
-          {
-            id: '2',
-            product: ProductServices.getListProducts()['2'],
-            total: '3',
-          },
-          {
-            id: '1',
-            product: ProductServices.getListProducts()['4'],
-            total: '2',
-          },
-        ],
-        employee: EmployeeService.getOneEmployee(),
-        user: UserServices.getAllUsers()['1'],
-        delivery_commission: '1.5',
-        total: '8.35',
-        date_generate: new Date('27-03-2021'),
-      },
-    ];
-  };
 }

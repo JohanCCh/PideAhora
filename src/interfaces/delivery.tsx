@@ -5,7 +5,7 @@ export interface Delivery {
   is_delivered: boolean;
   employee?: string;
   invoice: Invoice;
-  delivery_date: Date;
+  date: Date;
 }
 
 export interface DeliveryResponse {

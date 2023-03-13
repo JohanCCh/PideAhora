@@ -15,6 +15,7 @@ import {InvoiceDetail} from '../interfaces/invoice-detail';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Product} from '../interfaces/product';
 import {InvoiceService} from '../services/invoice-service';
+import {DeliveryService} from '../services/delivery-service';
 
 interface Props extends StackScreenProps<any, any> {}
 
@@ -80,6 +81,12 @@ export const BillingScreen = ({route, navigation}: Props) => {
         onPress: async () => {
           setRefreshing(true);
           const date = new Date();
+          const formatDate =
+            date.getDate() +
+            '/' +
+            (date.getMonth() + 1) +
+            '/' +
+            date.getFullYear();
           const total: number = subTotal + delivery_commission;
           const invoice_detail: InvoiceDetail[] = listBilling;
           const data = await InvoiceService.makeOrder({
@@ -95,8 +102,9 @@ export const BillingScreen = ({route, navigation}: Props) => {
               [
                 {
                   text: 'Aceptar',
-                  onPress: () => {
+                  onPress: async () => {
                     getCarProducts().finally(() => setRefreshing(false));
+                    await DeliveryService.getMyDeliveries();
                     navigation.navigate('DeliveryHistoryScreen');
                   },
                 },

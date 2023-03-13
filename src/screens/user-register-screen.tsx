@@ -127,6 +127,9 @@ export const UserRegisterScreen = ({navigation}: Props) => {
             onChangeText={text => onChangeTextEmail({value: text, error: ''})}
             value={textEmail.value}
             placeholder="Ingresa tu correo electrónico"
+            autoCapitalize='none'
+            autoCorrect={false}
+            autoComplete='email'
           />
           {textEmail.error != '' ? (
             <Text style={style.textError}>{textEmail.error}</Text>

@@ -9,6 +9,8 @@ import {loginUserVerifier} from '../functions/login-user-verifier';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {UserServices} from '../services/user-services';
 import {ProductServices} from '../services/product-service';
+import { DeliveryService } from '../services/delivery-service';
+import { EmployeeService } from '../services/employee';
 
 interface Props extends StackScreenProps<any, any> {}
 
@@ -25,14 +27,13 @@ export const LoginScreen = ({navigation}: Props) => {
   async function haveToken() {
     const token = await AsyncStorage.getItem('x-access-token');
     if (token != null) {
-      const productos = await ProductServices.getProducts();
-      if (productos != null) {
-        UserServices.getUserByToken();
-        navigation.reset({
-          index: 0,
-          routes: [{name: 'HomeScreen'}],
-        });
-      }
+      await UserServices.getUserByToken();
+      await ProductServices.getProducts();
+      await EmployeeService.getEmployeeByToken();
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'HomeScreen'}],
+      });
     }
   }
 
@@ -72,6 +73,9 @@ export const LoginScreen = ({navigation}: Props) => {
             onChangeText={text => onChangeTextEmail({value: text, error: ''})}
             value={textEmail.value}
             placeholder="Ingresa tu correo electrónico"
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete="email"
           />
           {textEmail.error != '' ? (
             <Text style={style.textError}>{textEmail.error}</Text>

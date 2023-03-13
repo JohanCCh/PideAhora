@@ -1,32 +1,46 @@
 import React from 'react';
-import {Text, View, StyleSheet, Image, TextInput, FlatList} from 'react-native';
+import {
+  Text,
+  View,
+  StyleSheet,
+  Image,
+  TextInput,
+  FlatList,
+  RefreshControl,
+} from 'react-native';
 import {styles} from '../theme/app-theme';
 import {StackScreenProps} from '@react-navigation/stack';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {ProductServices} from '../services/product-service';
-import { DeliveryService } from '../services/delivery-service';
 
 interface Props extends StackScreenProps<any, any> {}
 
 export const HomeScreen = ({navigation}: Props) => {
-  //const listProducts1 = ProductServices.getListProducts();
+  const [refreshing, setRefreshing] = React.useState(false);
+  getAllProducts();
   const listProducts = ProductServices.products;
   const [searchProduct, onChangeSearchProduct] = React.useState('');
   const timeArrival: number = 30;
   const shippingType = 'Envío $ 0.99';
-  getMyOrders();
 
-  //---------------------------- FUNCTIONS ----------------------------
+  //---------------------------- FUNCTIONS --------------------------------
+  //refrescar la pantalla
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    getAllProducts();
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  }, []);
+
   //limpiar el campo de búsqueda
   function clearSearch() {
-    if (searchProduct != '') {
-      console.log('Buscar producto: ' + searchProduct);
-    }
+    onChangeSearchProduct('');
   }
 
-  //obtener mis pedidos
-  async function getMyOrders() {
-    await DeliveryService.getMyDeliveries();
+  //obtener productos
+  async function getAllProducts() {
+    await ProductServices.getProducts();
   }
 
   return (
@@ -52,12 +66,21 @@ export const HomeScreen = ({navigation}: Props) => {
             value={searchProduct}
             placeholder="Buscar producto"
             underlineColorAndroid="transparent"
+            autoCapitalize="none"
+            autoCorrect={false}
           />
           <TouchableOpacity style={styles.btnSection} onPress={clearSearch}>
-            <Image
-              style={styles.ImageBtnSearch}
-              source={require('../assets/iconSearch.png')}
-            />
+            {searchProduct == '' ? (
+              <Image
+                style={styles.ImageBtnSearch}
+                source={require('../assets/iconSearch.png')}
+              />
+            ) : (
+              <Image
+                style={styles.ImageBtnSearch}
+                source={require('../assets/clear.png')}
+              />
+            )}
           </TouchableOpacity>
         </View>
         {/* ------- BILLING ------- */}
@@ -75,55 +98,52 @@ export const HomeScreen = ({navigation}: Props) => {
       {/* ---------------------------- BODY ---------------------------- */}
       <View style={style.body}>
         {/* ------- LIST PRODUCTOS ------- */}
-        {listProducts.length == 0 ? (
-          <Text> Cargando... </Text>
-        ) : (
-          <FlatList
-            style={style.list}
-            data={
-              searchProduct != ''
+        <FlatList
+          style={style.list}
+          data={
+            searchProduct != ''
+              ? listProducts.filter(product =>
+                  product.name.includes(searchProduct),
+                ).length == 0
                 ? listProducts.filter(product =>
+                    product.category.includes(searchProduct),
+                  )
+                : listProducts.filter(product =>
                     product.name.includes(searchProduct),
-                  ).length == 0
-                  ? listProducts.filter(product =>
-                      product.category.includes(searchProduct),
-                    )
-                  : listProducts.filter(product =>
-                      product.name.includes(searchProduct),
-                    )
-                : listProducts
-            }
-            renderItem={({item}) => (
-              // ---- PRODUCT ----
-              <TouchableOpacity
-                style={style.itemProduct}
-                onPress={() =>
-                  navigation.navigate('ProductDetailScreen', item)
-                }>
-                <View style={style.sectionStart}>
-                  <Image
-                    style={style.imageProduct}
-                    source={{
-                      uri: item.image_url,
-                    }}
-                  />
-                </View>
-                <View style={style.sectionMiddle}>
-                  <Text style={style.titleProduct}>{item.name}</Text>
-                  <Text style={style.descriptionProduct}>
-                    {timeArrival} min - {shippingType}
-                  </Text>
-                </View>
-                <View style={style.sectionEnd}>
-                  <Text style={style.textPrice}>
-                    {' '}
-                    $ {(item.unit_price * 1).toFixed(2)}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            )}
-          />
-        )}
+                  )
+              : listProducts
+          }
+          renderItem={({item}) => (
+            // ---- PRODUCT ----
+            <TouchableOpacity
+              style={style.itemProduct}
+              onPress={() => navigation.navigate('ProductDetailScreen', item)}>
+              <View style={style.sectionStart}>
+                <Image
+                  style={style.imageProduct}
+                  source={{
+                    uri: item.image_url,
+                  }}
+                />
+              </View>
+              <View style={style.sectionMiddle}>
+                <Text style={style.titleProduct}>{item.name}</Text>
+                <Text style={style.descriptionProduct}>
+                  {timeArrival} min - {shippingType}
+                </Text>
+              </View>
+              <View style={style.sectionEnd}>
+                <Text style={style.textPrice}>
+                  {' '}
+                  $ {(item.unit_price * 1).toFixed(2)}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          )}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        />
       </View>
     </View>
   );

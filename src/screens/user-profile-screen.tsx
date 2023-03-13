@@ -18,13 +18,14 @@ interface Props
   extends StackScreenProps<RootStackParams, 'UserProfileScreen'> {}
 
 export const UserProfileScreen = ({navigation}: Props) => {
+
+  //---------------------------- FUNCTIONS ----------------------------
+  //useEffect
   useEffect(() => {
     navigation.setOptions({
       title: 'Perfil de ' + UserServices.user?.name,
     });
   });
-
-  //---------------------------- FUNCTIONS ----------------------------
   //cierra la sección
   function logout() {
     Alert.alert('Cerrar sección', '¿Desea cerrar sección?', [
