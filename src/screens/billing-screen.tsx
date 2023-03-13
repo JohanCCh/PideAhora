@@ -6,19 +6,107 @@ import {
   StyleSheet,
   TouchableOpacity,
   FlatList,
+  Alert,
+  RefreshControl,
 } from 'react-native';
 import {StackScreenProps} from '@react-navigation/stack';
 import {styles} from '../theme/app-theme';
-import { InvoiceService } from '../services/invoice-service';
+import {InvoiceDetail} from '../interfaces/invoice-detail';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {Product} from '../interfaces/product';
+import {InvoiceService} from '../services/invoice-service';
 
 interface Props extends StackScreenProps<any, any> {}
 
 export const BillingScreen = ({route, navigation}: Props) => {
-  const listBilling: any = InvoiceService.getProduct();
-
-  console.log(listBilling);
+  const [refreshing, setRefreshing] = React.useState(false);
+  const [subTotal, setSubTotal] = React.useState(0);
+  const [delivery_commission, setDelivery_commission] = React.useState(1.5);
+  const listBilling: InvoiceDetail[] = [];
+  getCarProducts();
 
   //---------------------------- FUNCTIONS ----------------------------
+  //obtener el carrito de compras
+  async function getCarProducts() {
+    let aux: number = 0;
+    try {
+      const list = await AsyncStorage.getItem('CarProducts');
+      if (list) {
+        JSON.parse(list).map((item: InvoiceDetail) => {
+          listBilling.push(item);
+          aux += item.total * item.product.unit_price;
+        });
+      }
+      setSubTotal(aux);
+      return listBilling;
+    } catch (e) {
+      // saving error
+      console.log(e);
+    }
+  }
+
+  //elimina un producto del carrito de compras
+  async function deleteProduct(product: Product) {
+    Alert.alert(
+      'Eliminar producto (' + product.name + ')',
+      'Desear eliminar el producto del carrito de compras',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Aceptar',
+          onPress: () => {
+            setRefreshing(true);
+            InvoiceService.deleteProduct(product);
+            getCarProducts().finally(() => setRefreshing(false));
+            //console.log(listBilling);
+          },
+        },
+      ],
+    );
+  }
+
+  //realiza el pedido
+  async function makeOrder() {
+    Alert.alert('Realizar pedido', '¿Desear realizar el pedido?', [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'Aceptar',
+        onPress: async () => {
+          setRefreshing(true);
+          const date = new Date();
+          const total: number = subTotal + delivery_commission;
+          const invoice_detail: InvoiceDetail[] = listBilling;
+          const data = await InvoiceService.makeOrder({
+            invoice_detail,
+            delivery_commission,
+            total,
+            date,
+          });
+          if (data) {
+            Alert.alert(
+              'Pedido realizado',
+              'Su pedido se realizo correctamente',
+              [
+                {
+                  text: 'Aceptar',
+                  onPress: () => {
+                    getCarProducts().finally(() => setRefreshing(false));
+                    navigation.navigate('DeliveryHistoryScreen');
+                  },
+                },
+              ],
+            );
+          }
+        },
+      },
+    ]);
+  }
 
   return (
     <View style={styles.container}>
@@ -55,28 +143,41 @@ export const BillingScreen = ({route, navigation}: Props) => {
           data={listBilling}
           renderItem={({item}) => (
             //INVOICE
-            <View style={style.containerProduct}>
-              <Text style={style.textLot}>1000</Text>
-              <Text style={style.textNameProduct}>{item}</Text>
-              <Text style={style.textPriceUnit}>1000</Text>
-              <Text style={style.textTotalProduct}>1000</Text>
-            </View>
+            <TouchableOpacity onPress={() => deleteProduct(item.product)}>
+              <View style={style.containerProduct}>
+                <Text style={style.textLot}>{item.total}</Text>
+                <Text style={style.textNameProduct}>{item.product.name}</Text>
+                <Text style={style.textPriceUnit}>
+                  $ {(item.product.unit_price * 1).toFixed(2)}
+                </Text>
+                <Text style={style.textTotalProduct}>
+                  $ {(item.total * item.product.unit_price).toFixed(2)}
+                </Text>
+              </View>
+            </TouchableOpacity>
           )}
+          refreshControl={<RefreshControl refreshing={refreshing} />}
         />
         {/* --- BUTTON ADD --- */}
         <View style={style.containerBtn}>
           <View style={style.containerFooterBilling}>
             <View style={style.containerRowFooter}>
               <Text style={style.textDeliver}>SubTotal:</Text>
-              <Text style={style.textPriceDeliver}>$13.60</Text>
+              <Text style={style.textPriceDeliver}>
+                $ {subTotal.toFixed(2)}
+              </Text>
             </View>
             <View style={style.containerRowFooter}>
               <Text style={style.textDeliver}>Costo de envió:</Text>
-              <Text style={style.textPriceDeliver}>$1.99</Text>
+              <Text style={style.textPriceDeliver}>
+                $ {delivery_commission.toFixed(2)}
+              </Text>
             </View>
             <View style={style.containerRowFooter}>
               <Text style={style.textTotal}>Total:</Text>
-              <Text style={style.textPriceTotal}>$15.59</Text>
+              <Text style={style.textPriceTotal}>
+                $ {(subTotal + delivery_commission).toFixed(2)}
+              </Text>
             </View>
           </View>
 
@@ -90,7 +191,9 @@ export const BillingScreen = ({route, navigation}: Props) => {
             </Text>
             .
           </Text>
-          <TouchableOpacity style={style.btnAddProduct}>
+          <TouchableOpacity
+            style={style.btnAddProduct}
+            onPress={() => makeOrder()}>
             <Text style={style.textBtn}>Realizar pedido </Text>
           </TouchableOpacity>
         </View>
@@ -152,7 +255,7 @@ const style = StyleSheet.create({
   },
   textNameProduct: {
     width: '55%',
-    fontWeight: 'bold',
+    //fontWeight: 'bold',
   },
   textLot: {
     width: '10%',
@@ -160,7 +263,7 @@ const style = StyleSheet.create({
   },
   textPriceUnit: {
     width: '20%',
-    fontWeight: 'bold',
+    //fontWeight: 'bold',
   },
   textTotalProduct: {
     width: '15%',
@@ -240,6 +343,7 @@ const style = StyleSheet.create({
     width: '30%',
     textAlign: 'right',
     fontSize: 20,
+    //color: 'red',
   },
   textNote: {
     paddingHorizontal: 20,

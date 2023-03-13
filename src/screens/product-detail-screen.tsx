@@ -11,32 +11,51 @@ import {
 import {StackScreenProps} from '@react-navigation/stack';
 import {RootStackParams} from '../navigator/stack-navigator';
 import {styles} from '../theme/app-theme';
-import {ProductoServices} from '../services/producto-service';
+import {InvoiceService} from '../services/invoice-service';
 
 interface Props
   extends StackScreenProps<RootStackParams, 'ProductDetailScreen'> {}
 
 export const ProductDetailScreen = ({route, navigation}: Props) => {
   const product = route.params;
-  const [textQuantity, onChangeTextQuantity] = React.useState('1');
+  const [textQuantity, onChangeTextQuantity] = React.useState({
+    value: '1',
+    error: '',
+  });
 
   //---------------------------- FUNCTIONS ----------------------------
+  //cambia el valor del input de cantidad
   function onChanged(text: string) {
-    onChangeTextQuantity(text.replace(/[^0-9]/g, ''));
+    const newText = text.replace(/[^0-9]/g, '');
+    if (parseInt(newText) > product.stock) {
+      onChangeTextQuantity({
+        value: product.stock + '',
+        error: 'La cantidad no puede ser mayor al stock',
+      });
+    } else {
+      onChangeTextQuantity({value: newText, error: ''});
+    }
     getTotalPrice();
   }
 
+  //calcula el precio total
   function getTotalPrice() {
-    const result = (product.unit_price * parseInt(textQuantity)).toFixed(2);
+    const result = (product.unit_price * parseInt(textQuantity.value)).toFixed(
+      2,
+    );
     if (result == 'NaN') {
       return '0.00';
     }
     return result;
   }
 
+  //agrega el producto al carrito
   function addProduct() {
-    ProductoServices.addProduct(product);
-    navigation.navigate('HomeScreen');
+    InvoiceService.addProduct(product, parseInt(textQuantity.value)).finally(
+      () => {
+        navigation.navigate('HomeScreen');
+      },
+    );
   }
 
   return (
@@ -83,20 +102,25 @@ export const ProductDetailScreen = ({route, navigation}: Props) => {
             />
             <Text style={style.textNameProduct}>{product.name}</Text>
             <Text style={style.textPriceProduct}>
-              $ {product.unit_price.toFixed(2)}
+              $ {(product.unit_price * 1).toFixed(2)}
             </Text>
           </View>
           {/* ------- PRODUCT DETAIL ------- */}
           <View style={style.containerMain}>
             {/* --- PRODUCT QUANTITY --- */}
             <View style={style.containerInput}>
-              <TextInput
-                style={style.input}
-                keyboardType="numeric"
-                onChangeText={text => onChanged(text)}
-                value={textQuantity}
-              />
-              <Text style={style.textInput}>{product.unit_measure}</Text>
+              <View style={style.containerPrice}>
+                <TextInput
+                  style={style.input}
+                  keyboardType="numeric"
+                  onChangeText={text => onChanged(text)}
+                  value={textQuantity.value}
+                />
+                <Text style={style.textInput}>{product.unit_measure}</Text>
+              </View>
+              {textQuantity.error != '' ? (
+                <Text style={style.textError}>{textQuantity.error}</Text>
+              ) : null}
             </View>
             {/* --- PRODUCT PRICE TOTAL --- */}
             <View style={style.containerTotalPrice}>
@@ -108,7 +132,7 @@ export const ProductDetailScreen = ({route, navigation}: Props) => {
         {/* --- BUTTON ADD --- */}
         <View style={style.containerBtn}>
           <TouchableOpacity style={style.btnAddProduct} onPress={addProduct}>
-            <Text style={style.textBtn}>Agregar $ {getTotalPrice()}</Text>
+            <Text style={style.textBtn}>Agregar al carrito $ {getTotalPrice()}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -161,13 +185,18 @@ const style = StyleSheet.create({
     paddingVertical: 15,
   },
   containerInput: {
-    flexDirection: 'row',
+    //flexDirection: 'row',
     justifyContent: 'center',
+    alignContent: 'center',
+    alignItems: 'center',
     paddingVertical: 15,
     borderBottomWidth: 5,
     borderTopWidth: 5,
     //backgroundColor: 'green',
     borderColor: '#ffffff',
+  },
+  containerPrice: {
+    flexDirection: 'row',
   },
   containerTotalPrice: {
     flexDirection: 'row',
@@ -217,5 +246,11 @@ const style = StyleSheet.create({
     fontFamily: 'Roboto',
     fontWeight: 'bold',
     color: 'white',
+  },
+  textError: {
+    fontSize: 13,
+    color: 'red',
+    paddingBottom: 8,
+    paddingHorizontal: 10,
   },
 });

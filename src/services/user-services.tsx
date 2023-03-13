@@ -16,7 +16,7 @@ export class UserServices extends React.Component {
   //rol del usuario actual
   static role: string | null = null;
 
-  //inicio de sesion
+  //inicio de sesión
   static login = async ({email, password}: UserLogin) => {
     const {data} = await pideAhoraApi.post<LoginResponse>('/auth/login', {
       email,
@@ -93,4 +93,6 @@ export class UserServices extends React.Component {
       },
     ];
   };
+  static products: readonly any[] | null | undefined;
+  static prod: readonly any[] | null | undefined;
 }

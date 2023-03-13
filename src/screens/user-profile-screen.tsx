@@ -25,6 +25,7 @@ export const UserProfileScreen = ({navigation}: Props) => {
   });
 
   //---------------------------- FUNCTIONS ----------------------------
+  //cierra la sección
   function logout() {
     Alert.alert('Cerrar sección', '¿Desea cerrar sección?', [
       {
@@ -35,10 +36,12 @@ export const UserProfileScreen = ({navigation}: Props) => {
         text: 'Aceptar',
         onPress: async () => {
           AsyncStorage.removeItem('x-access-token').finally(() => {
-            AsyncStorage.clear();
-            navigation.reset({
-              index: 0,
-              routes: [{name: 'LoginScreen'}],
+            AsyncStorage.removeItem('role').finally(() => {
+              //AsyncStorage.clear();
+              navigation.reset({
+                index: 0,
+                routes: [{name: 'LoginScreen'}],
+              });
             });
           });
         },
@@ -113,7 +116,7 @@ export const UserProfileScreen = ({navigation}: Props) => {
               <Text> Pedidos </Text>
             </View>
             {/* ------- LOCATION ------- */}
-            <View style={style.containerBtnActions}>
+            {/* <View style={style.containerBtnActions}>
               <TouchableOpacity
                 style={style.btnActions}
                 onPress={() => navigation.navigate('LocationSelectionScreen')}>
@@ -123,7 +126,7 @@ export const UserProfileScreen = ({navigation}: Props) => {
                 />
               </TouchableOpacity>
               <Text> Ubicación </Text>
-            </View>
+            </View> */}
             {/* ------- ORDER ------- */}
             {UserServices.role === 'administrador' ? (
               <View style={style.containerBtnActions}>

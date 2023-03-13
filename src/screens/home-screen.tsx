@@ -3,23 +3,31 @@ import {Text, View, StyleSheet, Image, TextInput, FlatList} from 'react-native';
 import {styles} from '../theme/app-theme';
 import {StackScreenProps} from '@react-navigation/stack';
 import {TouchableOpacity} from 'react-native-gesture-handler';
-import {ProductoServices} from '../services/producto-service';
+import {ProductServices} from '../services/product-service';
+import { DeliveryService } from '../services/delivery-service';
 
 interface Props extends StackScreenProps<any, any> {}
 
 export const HomeScreen = ({navigation}: Props) => {
-  const listProducts = ProductoServices.getListProducts();
+  //const listProducts1 = ProductServices.getListProducts();
+  const listProducts = ProductServices.products;
   const [searchProduct, onChangeSearchProduct] = React.useState('');
   const timeArrival: number = 30;
   const shippingType = 'Envío $ 0.99';
+  getMyOrders();
 
   //---------------------------- FUNCTIONS ----------------------------
+  //limpiar el campo de búsqueda
   function clearSearch() {
     if (searchProduct != '') {
       console.log('Buscar producto: ' + searchProduct);
     }
   }
-  
+
+  //obtener mis pedidos
+  async function getMyOrders() {
+    await DeliveryService.getMyDeliveries();
+  }
 
   return (
     <View style={styles.container}>
@@ -67,49 +75,55 @@ export const HomeScreen = ({navigation}: Props) => {
       {/* ---------------------------- BODY ---------------------------- */}
       <View style={style.body}>
         {/* ------- LIST PRODUCTOS ------- */}
-        <FlatList
-          style={style.list}
-          data={
-            searchProduct != ''
-              ? listProducts.filter(product =>
-                  product.name.includes(searchProduct),
-                ).length == 0
+        {listProducts.length == 0 ? (
+          <Text> Cargando... </Text>
+        ) : (
+          <FlatList
+            style={style.list}
+            data={
+              searchProduct != ''
                 ? listProducts.filter(product =>
-                    product.category.includes(searchProduct),
-                  )
-                : listProducts.filter(product =>
                     product.name.includes(searchProduct),
-                  )
-              : listProducts
-          }
-          renderItem={({item}) => (
-            // ---- PRODUCT ----
-            <TouchableOpacity
-              style={style.itemProduct}
-              onPress={() => navigation.navigate('ProductDetailScreen', item)}>
-              <View style={style.sectionStart}>
-                <Image
-                  style={style.imageProduct}
-                  source={{
-                    uri: item.image_url,
-                  }}
-                />
-              </View>
-              <View style={style.sectionMiddle}>
-                <Text style={style.titleProduct}>{item.name}</Text>
-                <Text style={style.descriptionProduct}>
-                  {timeArrival} min - {shippingType}
-                </Text>
-              </View>
-              <View style={style.sectionEnd}>
-                <Text style={style.textPrice}>
-                  {' '}
-                  $ {item.unit_price.toFixed(2)}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          )}
-        />
+                  ).length == 0
+                  ? listProducts.filter(product =>
+                      product.category.includes(searchProduct),
+                    )
+                  : listProducts.filter(product =>
+                      product.name.includes(searchProduct),
+                    )
+                : listProducts
+            }
+            renderItem={({item}) => (
+              // ---- PRODUCT ----
+              <TouchableOpacity
+                style={style.itemProduct}
+                onPress={() =>
+                  navigation.navigate('ProductDetailScreen', item)
+                }>
+                <View style={style.sectionStart}>
+                  <Image
+                    style={style.imageProduct}
+                    source={{
+                      uri: item.image_url,
+                    }}
+                  />
+                </View>
+                <View style={style.sectionMiddle}>
+                  <Text style={style.titleProduct}>{item.name}</Text>
+                  <Text style={style.descriptionProduct}>
+                    {timeArrival} min - {shippingType}
+                  </Text>
+                </View>
+                <View style={style.sectionEnd}>
+                  <Text style={style.textPrice}>
+                    {' '}
+                    $ {(item.unit_price * 1).toFixed(2)}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            )}
+          />
+        )}
       </View>
     </View>
   );

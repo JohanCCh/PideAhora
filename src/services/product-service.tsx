@@ -1,8 +1,20 @@
 import React from 'react';
 import {Product} from '../interfaces/product';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import pideAhoraApi from '../api/pideAhoraApi';
 
-export class ProductoServices extends React.Component {
+export class ProductServices extends React.Component {
+  //lista de productos de la tienda
+  static products: Product[] = [];
+
+  //obtener lista de productos
+  static getProducts = async (): Promise<Product[]> => {
+    const {data}: any = await pideAhoraApi.get<Product[]>('/products');
+    //console.log(data);
+    ProductServices.products = data;
+    return data;
+  };
+
+  //--------------------------------------------------------------------------------------------------
   //devuelve lista de productos
   static getListProducts = () => {
     return [
@@ -105,13 +117,4 @@ export class ProductoServices extends React.Component {
     ];
   };
 
-  //añade un producto al carrito de compras
-  static addProduct = async (data: Product) => {
-    console.log('Guardar producto');
-    try {
-      await AsyncStorage.setItem('@listMeProducts', JSON.stringify(data));
-    } catch (e) {
-      // saving error
-    }
-  };
 }

@@ -6,15 +6,28 @@ import {
   StyleSheet,
   TouchableOpacity,
   FlatList,
+  RefreshControl,
 } from 'react-native';
 import {StackScreenProps} from '@react-navigation/stack';
 import {styles} from '../theme/app-theme';
 import {DeliveryService} from '../services/delivery-service';
+import {Delivery} from '../interfaces/delivery';
 
 interface Props extends StackScreenProps<any, any> {}
 
 export const DeliveryHistoryScreen = ({route, navigation}: Props) => {
-  const listDeliveries = DeliveryService.getDelivery();
+  const listDeliveries = DeliveryService.listDeliveries;
+  const [refreshing, setRefreshing] = React.useState(false);
+  console.log(listDeliveries);
+
+  //---------------------------- FUNCTIONS ----------------------------
+  //actualiza la lista de entregas
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -50,6 +63,9 @@ export const DeliveryHistoryScreen = ({route, navigation}: Props) => {
       {/* ---------------------------- BODY ---------------------------- */}
       <View style={style.body}>
         {/* ------- LIST INVOICE ------- */}
+        {listDeliveries.length == 0 ? (
+          <Text> Cargando... </Text>
+        ) : (
         <FlatList
           style={style.list}
           data={listDeliveries}
@@ -74,7 +90,7 @@ export const DeliveryHistoryScreen = ({route, navigation}: Props) => {
               </View>
               {/* SECTION MIDDLE */}
               <View style={style.sectionMiddle}>
-                <Text style={style.text}>{item.date_delivery}</Text>
+                <Text style={style.text}>1:{!item.delivery_date}</Text>
               </View>
               {/* SECTION END */}
               <View style={style.sectionEnd}>
@@ -84,7 +100,8 @@ export const DeliveryHistoryScreen = ({route, navigation}: Props) => {
               </View>
             </View>
           )}
-        />
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>}
+        />)}
       </View>
     </View>
   );

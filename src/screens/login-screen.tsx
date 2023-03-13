@@ -7,7 +7,8 @@ import {styles} from '../theme/app-theme';
 import {emailValidator} from '../functions/validate-mail';
 import {loginUserVerifier} from '../functions/login-user-verifier';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { UserServices } from '../services/user-services';
+import {UserServices} from '../services/user-services';
+import {ProductServices} from '../services/product-service';
 
 interface Props extends StackScreenProps<any, any> {}
 
@@ -20,24 +21,28 @@ export const LoginScreen = ({navigation}: Props) => {
   });
 
   //---------------------------- FUNCTIONS ----------------------------
+  //verificar si el usuario ya inicio sesión
   async function haveToken() {
     const token = await AsyncStorage.getItem('x-access-token');
     if (token != null) {
-      UserServices.getUserByToken();
-      navigation.reset({
-        index: 0,
-        routes: [{name: 'HomeScreen'}],
-      });
+      const productos = await ProductServices.getProducts();
+      if (productos != null) {
+        UserServices.getUserByToken();
+        navigation.reset({
+          index: 0,
+          routes: [{name: 'HomeScreen'}],
+        });
+      }
     }
   }
 
+  //inicio de sesión
   async function loginUser() {
     const emailError = emailValidator(textEmail.value);
     const passwordError = await loginUserVerifier(
       textEmail.value,
       textPassword.value,
     );
-
     if (emailError || passwordError) {
       onChangeTextEmail({...textEmail, error: emailError});
       onChangeTextPassword({...textPassword, error: passwordError});
