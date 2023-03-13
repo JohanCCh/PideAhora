@@ -15,6 +15,8 @@ export class UserServices extends React.Component {
   static user: User | null = null;
   //rol del usuario actual
   static role: string | null = null;
+  //id del empleado actual
+  static employeeId: number | null = null;
 
   //inicio de sesión
   static login = async ({email, password}: UserLogin) => {

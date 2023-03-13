@@ -15,9 +15,12 @@ export class EmployeeService extends React.Component {
       await DeliveryService.getMyDeliveries();
       await AsyncStorage.setItem('role', data[0].role);
       UserServices.role = data[0].role;
+      UserServices.employeeId = data[0].id;
     } else {
       await AsyncStorage.setItem('role', 'cliente');
       UserServices.role = 'cliente';
+      UserServices.employeeId = null;
     }
   };
+
 }

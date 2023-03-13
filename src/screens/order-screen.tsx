@@ -18,12 +18,15 @@ export const OrderScreen = ({route, navigation}: Props) => {
   getAllDeliveries();
   const listDeliveries = DeliveryService.listAllDeliveries;
   const [refreshing, setRefreshing] = React.useState(false);
+  const [selectedDelivery, setSelectedDelivery] = React.useState(false);
   //console.log(listDeliveries);
 
   //---------------------------- FUNCTIONS ----------------------------
   //actualiza la lista de entregas
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
+    getAllDeliveries();
+    //DeliveryService.myDelivery =  null;
     setTimeout(() => {
       setRefreshing(false);
     }, 2000);
@@ -33,6 +36,17 @@ export const OrderScreen = ({route, navigation}: Props) => {
   async function getAllDeliveries() {
     await DeliveryService.getAllDeliveries();
   }
+
+  //alterar vista de la lista
+  const alterView = () => {
+    setSelectedDelivery(!selectedDelivery);
+  };
+
+  //seleccionar una entrega
+  const selectDelivery = async (id: number) => {
+    await DeliveryService.selectDelivery(id);
+    onRefresh();
+  };
 
   //dar formato a la fecha
   const formatDate = (data: Date) => {
@@ -81,40 +95,66 @@ export const OrderScreen = ({route, navigation}: Props) => {
       </View>
       {/* ---------------------------- BODY ---------------------------- */}
       <View style={style.body}>
-        {/* ------- LIST FACTURACIÓN ------- */}
-        <FlatList
-          style={style.list}
-          data={listDeliveries}
-          renderItem={({item}) => (
-            // INVOICE
-            <View style={style.containerDeliverers}>
-              {/* SECTION START */}
-              <View style={style.sectionStart}>
-                <Image
-                  style={style.imageIcon}
-                  source={
-                    item.is_delivered
-                      ? require('../assets/iconBills.png')
-                      : require('../assets/iconDeliveriesMade.png')
-                  }
-                />
-              </View>
-              {/* SECTION MIDDLE */}
-              <View style={style.sectionMiddle}>
-                <Text style={style.text}>{formatDate(item.date)}</Text>
-              </View>
-              {/* SECTION END */}
-              <View style={style.sectionEnd}>
-                <TouchableOpacity style={style.btnAddProduct}>
-                  <Text style={style.textBtn}>Entregar</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+        {/* ------- BUTTONS CHANGE ------- */}
+        <View style={style.containerChange}>
+          {!selectedDelivery ? (
+            <TouchableOpacity
+              style={style.btnChange}
+              onPress={() => alterView()}>
+              <Text style={style.textBtn}> Todas las entregas</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={style.btnChange}
+              onPress={() => alterView()}>
+              <Text style={style.textBtn}> Mi entrega</Text>
+            </TouchableOpacity>
           )}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-        />
+        </View>
+        {/* ------- LIST DELIVERIES ------- */}
+        {!selectedDelivery ? (
+          <FlatList
+            style={style.list}
+            data={listDeliveries}
+            renderItem={({item}) => (
+              // INVOICE
+              <View style={style.containerDeliverers}>
+                {/* SECTION START */}
+                <View style={style.sectionStart}>
+                  <Image
+                    style={style.imageIcon}
+                    source={
+                      item.is_delivered
+                        ? require('../assets/iconBills.png')
+                        : require('../assets/iconDeliveriesMade.png')
+                    }
+                  />
+                </View>
+                {/* SECTION MIDDLE */}
+                <View style={style.sectionMiddle}>
+                  <Text style={style.text}>{formatDate(item.date)}</Text>
+                </View>
+                {/* SECTION END */}
+                <View style={style.sectionEnd}>
+                  {DeliveryService.myDelivery != null ? null : (
+                    <TouchableOpacity
+                      style={style.btnAddProduct}
+                      onPress={() => selectDelivery(parseInt(item.id))}>
+                      <Text style={style.textBtn}>Entregar</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
+            )}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+          />
+        ) : (
+          <View style={style.containerChange}>
+            <Text>{!DeliveryService.myDelivery?.invoice}</Text>
+          </View>
+        )}
       </View>
     </View>
   );
@@ -139,6 +179,17 @@ const style = StyleSheet.create({
   },
   list: {
     paddingHorizontal: 20,
+  },
+  containerChange: {
+    paddingHorizontal: 20,
+  },
+  btnChange: {
+    alignItems: 'center',
+    paddingVertical: 10,
+    marginVertical: 10,
+    borderRadius: 10,
+    borderWidth: 0.5,
+    backgroundColor: '#c0392b',
   },
   containerDeliverers: {
     borderColor: 'black',
