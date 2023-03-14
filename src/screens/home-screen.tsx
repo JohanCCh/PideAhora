@@ -18,7 +18,7 @@ interface Props extends StackScreenProps<any, any> {}
 export const HomeScreen = ({navigation}: Props) => {
   const [refreshing, setRefreshing] = React.useState(false);
   getAllProducts();
-  const listProducts = ProductServices.products;
+  let listProducts = ProductServices.products;
   const [searchProduct, onChangeSearchProduct] = React.useState('');
   const timeArrival: number = 30;
   const shippingType = 'Envío $ 0.99';
@@ -32,6 +32,10 @@ export const HomeScreen = ({navigation}: Props) => {
       setRefreshing(false);
     }, 2000);
   }, []);
+  
+  navigation.addListener('focus', () => {
+    onRefresh();
+  });
 
   //limpiar el campo de búsqueda
   function clearSearch() {
@@ -133,6 +137,9 @@ export const HomeScreen = ({navigation}: Props) => {
                 </Text>
               </View>
               <View style={style.sectionEnd}>
+                <Text style={style.textStock}> u {item.stock}</Text>
+              </View>
+              <View style={style.sectionEnd}>
                 <Text style={style.textPrice}>
                   {' '}
                   $ {(item.unit_price * 1).toFixed(2)}
@@ -177,7 +184,7 @@ const style = StyleSheet.create({
     //backgroundColor: 'red',
   },
   sectionMiddle: {
-    width: '65%',
+    width: '50%',
     //backgroundColor: 'green',
   },
   sectionEnd: {
@@ -188,6 +195,11 @@ const style = StyleSheet.create({
     fontFamily: 'Roboto',
     fontWeight: 'bold',
     textAlign: 'right',
+  },
+  textStock: {
+    fontFamily: 'Roboto',
+    //fontWeight: 'bold',
+    textAlign: 'left',
   },
   titleProduct: {
     fontFamily: 'Roboto',

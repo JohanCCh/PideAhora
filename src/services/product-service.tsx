@@ -13,4 +13,11 @@ export class ProductServices extends React.Component {
     ProductServices.products = data;
     return data;
   };
+
+  //obtener producto por id
+  static getProductById = async (id: number): Promise<Product> => {
+    const {data}: any = await pideAhoraApi.get<Product>(`/products/${id}`);
+    //console.log(data);
+    return data;
+  };
 }

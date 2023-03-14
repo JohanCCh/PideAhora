@@ -104,8 +104,8 @@ export const BillingScreen = ({route, navigation}: Props) => {
                 {
                   text: 'Aceptar',
                   onPress: async () => {
-                    getCarProducts().finally(() => setRefreshing(false));
                     await DeliveryService.getMyDeliveries();
+                    getCarProducts().finally(() => setRefreshing(false));
                     navigation.navigate('DeliveryHistoryScreen');
                   },
                 },

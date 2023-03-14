@@ -101,6 +101,7 @@ export const ProductDetailScreen = ({route, navigation}: Props) => {
               }}
             />
             <Text style={style.textNameProduct}>{product.name}</Text>
+            <Text style={style.textNameProduct}>{product.stock}</Text>
             <Text style={style.textPriceProduct}>
               $ {(product.unit_price * 1).toFixed(2)}
             </Text>
