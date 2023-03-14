@@ -1,4 +1,5 @@
 import React from 'react';
+import {Alert} from 'react-native';
 import {
   LoginResponse,
   RegisterResponse,
@@ -46,8 +47,24 @@ export class UserServices extends React.Component {
 
   //obtener el usuario actual por token
   static getUserByToken = async () => {
-    const {data}: any = await pideAhoraApi.post<User>('/users/get-user-token');
+    const {data}: any = await pideAhoraApi.post<User>(`/users/get-user-token`);
     UserServices.user = data[0];
   };
 
+  //actualizar la dirección del usuario
+  static updateAddress = async (address: string) => {
+    const id = UserServices.user?.id;
+    const {data}: any = await pideAhoraApi.put<any>(`/users/${id}/address`, {
+      address,
+    });
+    //console.log(data);
+    if (UserServices.user != null && data.body.user.address != '') {
+      UserServices.user.address = data.body.user.address;
+    } else {
+      Alert.alert(
+        'Error de guardado!',
+        'No se pudo guardar la dirección, inténtelo mas tarde.',
+      );
+    }
+  };
 }

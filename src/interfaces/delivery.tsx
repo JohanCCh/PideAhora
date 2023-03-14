@@ -1,11 +1,12 @@
-import {Invoice} from './invoice';
+import {InvoiceOrder} from './invoice';
 
 export interface Delivery {
   id: string;
   is_delivered: boolean;
   employee?: string;
-  invoice: Invoice;
+  invoice: InvoiceOrder;
   date: Date;
+  address: string;
 }
 
 export interface DeliveryResponse {

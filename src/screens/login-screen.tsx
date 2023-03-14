@@ -9,8 +9,7 @@ import {loginUserVerifier} from '../functions/login-user-verifier';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {UserServices} from '../services/user-services';
 import {ProductServices} from '../services/product-service';
-import { DeliveryService } from '../services/delivery-service';
-import { EmployeeService } from '../services/employee';
+import {EmployeeService} from '../services/employee';
 
 interface Props extends StackScreenProps<any, any> {}
 
@@ -30,10 +29,17 @@ export const LoginScreen = ({navigation}: Props) => {
       await UserServices.getUserByToken();
       await ProductServices.getProducts();
       await EmployeeService.getEmployeeByToken();
-      navigation.reset({
-        index: 0,
-        routes: [{name: 'HomeScreen'}],
-      });
+      if (UserServices.user?.address != null) {
+        navigation.reset({
+          index: 0,
+          routes: [{name: 'HomeScreen'}],
+        });
+      } else {
+        navigation.reset({
+          index: 0,
+          routes: [{name: 'DeliveryWaitingScreen'}],
+        });
+      }
     }
   }
 
@@ -49,10 +55,17 @@ export const LoginScreen = ({navigation}: Props) => {
       onChangeTextPassword({...textPassword, error: passwordError});
       return;
     }
-    navigation.reset({
-      index: 0,
-      routes: [{name: 'HomeScreen'}],
-    });
+    if (UserServices.user?.address != null) {
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'HomeScreen'}],
+      });
+    } else {
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'DeliveryWaitingScreen'}],
+      });
+    }
   }
 
   return (

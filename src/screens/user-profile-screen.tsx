@@ -18,7 +18,6 @@ interface Props
   extends StackScreenProps<RootStackParams, 'UserProfileScreen'> {}
 
 export const UserProfileScreen = ({navigation}: Props) => {
-
   //---------------------------- FUNCTIONS ----------------------------
   //useEffect
   useEffect(() => {
@@ -37,7 +36,8 @@ export const UserProfileScreen = ({navigation}: Props) => {
         text: 'Aceptar',
         onPress: async () => {
           AsyncStorage.removeItem('x-access-token').finally(() => {
-            AsyncStorage.removeItem('role').finally(() => {
+            AsyncStorage.removeItem('role').finally(async () => {
+              await AsyncStorage.removeItem('delivery');
               //AsyncStorage.clear();
               navigation.reset({
                 index: 0,
@@ -88,8 +88,24 @@ export const UserProfileScreen = ({navigation}: Props) => {
           </View>
           {/* ------- MANE ------- */}
           <Text style={style.tetBold}> {UserServices.user?.name}</Text>
+          {/* ------- ADDRESS ------- */}
+          <Text style={style.text}>
+            {/* ICON */}
+            <Image
+              source={require('../assets/pin.png')}
+              style={style.iconInfo}
+            />{' '}
+            {UserServices.user?.address}
+          </Text>
           {/* ------- EMAIL ------- */}
-          <Text style={style.text}> {UserServices.user?.email}</Text>
+          <Text style={style.text}>
+            {/* ICON */}
+            <Image
+              source={require('../assets/mail.png')}
+              style={style.iconInfo}
+            />{' '}
+            {UserServices.user?.email}
+          </Text>
           {/* ---------------------------- ACTIONS ---------------------------- */}
           <View style={style.containerActions}>
             {/* ------- BillS ------- */}
@@ -175,6 +191,11 @@ const style = StyleSheet.create({
     height: 30,
     tintColor: 'white',
   },
+  iconInfo: {
+    width: 16,
+    height: 16,
+    marginHorizontal: 5,
+  },
   titleHeader: {
     fontSize: 20,
     textTransform: 'uppercase',
@@ -221,11 +242,11 @@ const style = StyleSheet.create({
   },
   text: {
     paddingVertical: 5,
-    fontSize: 20,
+    fontSize: 16,
     textAlign: 'center',
   },
   containerActions: {
-    paddingVertical: 20,
+    paddingVertical: 30,
     flexDirection: 'row',
     justifyContent: 'space-between',
     //backgroundColor: 'red',

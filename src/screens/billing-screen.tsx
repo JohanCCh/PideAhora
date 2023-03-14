@@ -16,6 +16,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Product} from '../interfaces/product';
 import {InvoiceService} from '../services/invoice-service';
 import {DeliveryService} from '../services/delivery-service';
+import {UserServices} from '../services/user-services';
 
 interface Props extends StackScreenProps<any, any> {}
 
@@ -138,6 +139,17 @@ export const BillingScreen = ({route, navigation}: Props) => {
       </View>
       {/* ---------------------------- BODY ---------------------------- */}
       <View style={style.body}>
+        {/* ------- ADDRESS ------- */}
+        <View style={style.containerAddress}>
+          <Text style={style.textAddress}>
+            {/* ICON */}
+            <Image
+              source={require('../assets/pin.png')}
+              style={style.iconInfo}
+            />{' '}
+            {UserServices.user?.address}
+          </Text>
+        </View>
         {/* TITLES INVOICE */}
         <View style={style.containerTitlesBilling}>
           <Text style={style.textTitleLot}>Nº</Text>
@@ -244,6 +256,27 @@ const style = StyleSheet.create({
     flexDirection: 'row',
     paddingVertical: 5,
     borderBottomWidth: 1,
+  },
+  containerAddress: {
+    flexDirection: 'row',
+    marginHorizontal: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    marginBottom: 10,
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderRadius: 10,
+  },
+  textAddress: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    color: '#000',
+  },
+  iconInfo: {
+    width: 16,
+    height: 16,
+    marginHorizontal: 5,
   },
   textTitleNameProduct: {
     width: '55%',
